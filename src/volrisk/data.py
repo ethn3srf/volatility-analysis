@@ -2,7 +2,7 @@
 
 import pandas as pd
 import yfinance as yf
-from volrisk.config import START, END
+from volrisk.config import DATA_RAW, START, END
 
 
 def download_ticker(name, ticker, start=START, end=END):
@@ -93,3 +93,78 @@ def check_raw(df, name):
 
     # Print a summary if all checks pass
     print(f"Raw data for '{name}' is valid: {len(df)} rows, from {first.date()} to {last.date()}.")
+
+def save_raw(df, name, force=False):
+    """Save raw data to a CSV file.
+
+    Args:
+        df (pd.DataFrame): Raw data to save.
+        name (str): Short name of the series (e.g. "sp500"), used in the filename.
+        force (bool): If True, overwrite existing file. Default is False.
+
+    Raises:
+        FileExistsError: If the file already exists and force is False. Existing files are never overwritten unless force=True, so the original download stays frozen.
+    """
+    # Construct the filename
+    filename = f"{name}.csv"
+    filepath = DATA_RAW / filename
+
+    # Check if the file already exists
+    if filepath.exists() and not force:
+        raise FileExistsError(f"File '{filepath}' already exists. Use force=True to overwrite.")
+
+    # Save the DataFrame to CSV
+    df.to_csv(filepath)
+    print(f"Raw data for '{name}' saved to '{filepath}'.")
+
+def save_raw(df, name, force=False):
+    """Save raw data to a CSV file.
+
+    Existing files are never overwritten unless force=True, so the original download stays frozen.
+
+    Args:
+        df (pd.DataFrame): Raw data to save.
+        name (str): Short name of the series (e.g. "sp500"), used in the filename.
+        force (bool): If True, overwrite an existing file. Default is False.
+
+    Raises:
+        FileExistsError: If the file already exists and force is False.
+    """
+    # Build the file path
+    filepath = DATA_RAW / f"{name}.csv"
+
+    # Refuse to overwrite an existing raw file unless explicitly forced
+    if filepath.exists() and not force:
+        raise FileExistsError(f"File '{filepath}' already exists. Use force=True to overwrite.")
+
+    # Create the raw data folder if needed, then save the DataFrame to CSV
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(filepath)
+    print(f"Raw data for '{name}' saved to '{filepath}'.")
+
+
+def load_raw(name):
+    """Load raw data from a CSV file.
+
+    Args:
+        name (str): Short name of the series (e.g. "sp500"), used in the filename.
+
+    Returns:
+        pd.DataFrame: Raw data indexed by date.
+
+    Raises:
+        FileNotFoundError: If the raw file does not exist yet.
+    """
+    # Build the file path
+    filepath = DATA_RAW / f"{name}.csv"
+
+    # Stop with a clear message if the raw data has not been downloaded yet
+    if not filepath.exists():
+        raise FileNotFoundError(
+            f"Raw data for '{name}' not found at '{filepath}'. Run scripts/download_data.py first."
+        )
+
+    # Load the DataFrame from CSV, with dates as index
+    df = pd.read_csv(filepath, index_col=0, parse_dates=True)
+    print(f"Raw data for '{name}' loaded from '{filepath}'.")
+    return df
