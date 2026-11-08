@@ -55,3 +55,30 @@ def cagr(prices):
 
     years = (prices.index[-1] - prices.index[0]).days / 365.25
     return (prices.iloc[-1] / prices.iloc[0]) ** (1 / years) - 1
+
+def summary_stats(returns):
+    """Compute summary statistics for a daily return series.
+
+    Statistics are daily (not annualized). Kurtosis is reported as excess kurtosis,
+    which equals 0 for a normal distribution.
+
+    Args:
+        returns (pd.Series): Daily return series, indexed by date.
+
+    Returns:
+        pd.Series: Number of observations, mean, standard deviation, minimum and maximum
+            (with their dates), skewness and excess kurtosis.
+    """
+    stats = {
+        "n_obs": returns.count(),
+        "mean": returns.mean(),
+        "std": returns.std(),
+        "min": returns.min(),
+        "min_date": returns.idxmin(),
+        "max": returns.max(),
+        "max_date": returns.idxmax(),
+        "skewness": returns.skew(),
+        "excess_kurtosis": returns.kurt(),
+    }
+    return pd.Series(stats, name=returns.name)
+
