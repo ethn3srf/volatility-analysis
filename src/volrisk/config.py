@@ -1,22 +1,22 @@
-"""Paramètres centraux du projet : chemins, tickers, dates et constantes."""
+"""Central configuration: project paths, tickers, sample period and analysis parameters."""
 
 from pathlib import Path
 
-# --- Chemins -------------------------------------------------------------
+# --- Paths ---------------------------------------------------------------
 ROOT = Path(__file__).resolve().parents[2]
 DATA_RAW = ROOT / "data" / "raw"
 DATA_PROCESSED = ROOT / "data" / "processed"
 FIGURES = ROOT / "figures"
 
-# --- Données ---------------------------------------------------------------
+# --- Data ----------------------------------------------------------------
 TICKERS = {
     "sp500": "^GSPC",
     "vix": "^VIX",
 }
 START = "2015-01-01"
-END = "2026-11-01"  # yfinance exclut la date de fin : on obtient le 31/10/2026
+END = "2026-11-01"  # yfinance treats the end date as exclusive: sample ends on 2026-10-31
 
-# --- Paramètres d'analyse --------------------------------------------------
-WINDOWS = [21, 63]               # fenêtres glissantes : 1 mois et 1 trimestre de bourse
-CONFIDENCE_LEVELS = [0.95, 0.99] # niveaux de VaR et d'Expected Shortfall
-TRADING_DAYS = 252               # nombre de séances par an, pour annualiser
+# --- Analysis parameters -------------------------------------------------
+WINDOWS = [21, 63]                # rolling windows: 1 trading month and 1 trading quarter
+CONFIDENCE_LEVELS = [0.95, 0.99]  # confidence levels for VaR and Expected Shortfall
+TRADING_DAYS = 252                # trading days per year, used to annualize volatility
