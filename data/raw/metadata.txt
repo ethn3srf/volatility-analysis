@@ -1,0 +1,4 @@
+download_date: 2026-11-08T20:00:01
+source: Yahoo Finance (yfinance 1.8.0)
+sample_period: [2015-01-01, 2026-11-01)
+tickers: {'sp500': '^GSPC', 'vix': '^VIX'}
