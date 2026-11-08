@@ -1,0 +1,18 @@
+# Environnement virtuel (lourd, et propre à ton ordinateur)
+.venv/
+
+# Fichiers générés automatiquement par Python et les outils
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Sauvegardes automatiques de Jupyter
+.ipynb_checkpoints/
+
+# Données téléchargées (on ne republie pas les données de Yahoo)
+data/raw/*.csv
+data/processed/*.csv
+
+# Clés d'API éventuelles, jamais sur GitHub
+.env

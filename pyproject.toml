@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "volrisk"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["pandas", "numpy", "scipy", "statsmodels", "matplotlib", "seaborn", "yfinance"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
