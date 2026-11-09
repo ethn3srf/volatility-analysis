@@ -168,3 +168,21 @@ def load_raw(name):
     df = pd.read_csv(filepath, index_col=0, parse_dates=True)
     print(f"Raw data for '{name}' loaded from '{filepath}'.")
     return df
+
+def load_fred_vix():
+    """Load the FRED VIXCLS series (official Cboe VIX close) from data/raw/vixcls_fred.csv.
+
+    FRED is used as the reference VIX source: a three-way check against Yahoo Finance and Cboe
+    showed an incorrect Yahoo close on 2026-02-06.
+
+    Returns:
+        pd.Series: VIX close in decimal form (e.g. 0.18 for a VIX of 18), indexed by date.
+
+    Raises:
+        FileNotFoundError: If the FRED file has not been downloaded.
+    """
+    filepath = DATA_RAW / "vixcls_fred.csv"
+    if not filepath.exists():
+        raise FileNotFoundError(f"FRED VIX file not found at '{filepath}'. Download VIXCLS from FRED first.")
+    df = pd.read_csv(filepath, index_col=0, parse_dates=True, na_values=".")
+    return (df["VIXCLS"] / 100).dropna().rename("vix")
