@@ -231,7 +231,7 @@ Then download the FRED VIX series manually:
 
 1. Open <https://fred.stlouisfed.org/series/VIXCLS>, set the range to 2015-01-01 – 2026-10-31 and
    download the CSV.
-2. Save it as `data/raw/vixcls_fred.csv`.
+2. **Rename the downloaded file (`VIXCLS.csv`) to `vixcls_fred.csv`** and move it to `data/raw/`.
 3. Optionally, run `python scripts/check_vix_fred.py` to reproduce the Yahoo vs. FRED comparison.
 
 Results may differ marginally if Yahoo Finance revises its historical data after the original
@@ -239,8 +239,8 @@ download date recorded in `metadata.txt`.
 
 ### 3. Run the analysis
 
-Open the notebooks in order (`01` to `06`) and use **Run All**. Each notebook saves its figures to
-`figures/`.
+Open the notebooks in order (`01` to `06`), **select the `.venv` interpreter as the notebook kernel**,
+and use **Run All**. Each notebook saves its figures to `figures/`.
 
 ---
 
@@ -270,8 +270,11 @@ Open the notebooks in order (`01` to `06`) and use **Run All**. Each notebook sa
 | Skewness (simple / log returns) | −0.36 / −0.64 |
 | Excess kurtosis (log returns) | 15.9 |
 
+### Interpretation
+
 - **Volatility drag.** The arithmetic mean (12.60%) exceeds the continuous growth rate (11.04%) by
-  exactly `σ²/2 = 0.1765² / 2 = 1.56%`: volatility reduces compounded wealth (Booth & Fama, 1992).
+  1.56 points, in line with the approximation `σ²/2 = 0.1765² / 2 = 1.56%`: volatility reduces compounded
+  wealth (Booth & Fama, 1992).
 - **Stylized facts.** Negative skewness and very fat tails (excess kurtosis 15.9, against 0 for a normal
   distribution) match the stylized facts of asset returns (Mandelbrot, 1963; Cont, 2001).
   Eight of the ten most extreme daily returns occurred between March and June 2020.
@@ -311,6 +314,8 @@ Open the notebooks in order (`01` to `06`) and use **Run All**. Each notebook sa
 |---|---|---|---|---|---|
 | Annualized volatility | ≈ 7% | ≈ 35% | ≈ 24% | ≈ 19% | 12–17% |
 
+### Interpretation
+
 - The **median (12.4%) is far below the full-sample volatility (17.65%)**: volatility is low most of the
   time and the average is pulled up by short, extreme episodes.
 - **Two types of stress**: *spikes* (2020, 2025), short and violent, and *persistent stress* (2022),
@@ -319,11 +324,19 @@ Open the notebooks in order (`01` to `06`) and use **Run All**. Each notebook sa
   **Mean reversion**: after each spike, volatility returns toward its long-run level.
 - **Range-based estimators are lower** because they ignore the overnight move (close to next open) and
   suffer from a discretization bias (the observed high and low understate the true extremes).
-  The Yang & Zhang (2000) estimator addresses both issues and is a natural extension.
+  The Yang & Zhang (2000) estimator accounts for the overnight gap and is a natural extension.
 
 ![Rolling volatility](figures/02_rolling_volatility.png)
-![Volatility estimators](figures/02_volatility_estimators.png)
 ![Volatility by year](figures/02_volatility_by_year.png)
+
+<details>
+<summary><b>Comparison of estimators</b> (click to expand)</summary>
+
+<br>
+
+![Volatility estimators](figures/02_volatility_estimators.png)
+
+</details>
 
 ---
 
@@ -334,12 +347,12 @@ Open the notebooks in order (`01` to `06`) and use **Run All**. Each notebook sa
 ### Method
 
 - **Jarque-Bera test** (Jarque & Bera, 1980): `JB = n/6 × (S² + K²/4)`, where S is the skewness and
-  K the excess kurtosis; under normality JB follows a χ²(2).
+  K the excess kurtosis; under normality JB follows a χ²(2) asymptotically.
 - **QQ-plot** of empirical quantiles against normal quantiles.
 - **Autocorrelation function (ACF)** of returns `r` and of absolute returns `|r|`, with the
   ±1.96/√n confidence band.
-- **Ljung-Box test** (Ljung & Box, 1978) on 20 lags: `Q = n(n+2) × Σ ρ_k² / (n−k)`, χ²(20) under the
-  null of no autocorrelation. Implemented from scratch and **validated against `statsmodels`**
+- **Ljung-Box test** (Ljung & Box, 1978) on 20 lags: `Q = n(n+2) × Σ ρ_k² / (n−k)`, asymptotically χ²(20)
+  under the null of no autocorrelation. Implemented from scratch and **validated against `statsmodels`**
   (Q = 289.19 vs. 287.91; the 0.4% gap comes from the autocorrelation estimator: pandas uses a Pearson
   correlation on overlapping pairs, statsmodels the standard full-sample ACF).
 - **Standardized returns** `z_t = r_t / σ_(t−1)`, where `σ_(t−1)` is the 21-day rolling standard
@@ -360,6 +373,8 @@ Open the notebooks in order (`01` to `06`) and use **Run All**. Each notebook sa
 | Standardized returns `z` | 22.3 | **0.33** |
 | Absolute standardized returns `abs(z)` | 140 | ≈ 5e−20 |
 
+### Interpretation
+
 - **Returns are not normal**, before or after standardization.
 - **Volatility clustering**: the ACF of `|r|` is 0.36–0.39 at lags 1–3 and still 0.15–0.18 at lag 20.
   This slow decay is the **long memory** of volatility (Ding, Granger & Engle, 1993), the empirical
@@ -372,9 +387,17 @@ Open the notebooks in order (`01` to `06`) and use **Run All**. Each notebook sa
   happen during crises (high `σ_(t−1)`, so `z` stays moderate). Crashes are surprises; rebounds are not.
 - `|z|` remains autocorrelated: a 21-day rolling window is a crude volatility model.
 
-![Histogram vs. normal](figures/03_histogram_vs_normal.png)
 ![QQ-plots](figures/03_qq_plots.png)
 ![Autocorrelation](figures/03_autocorrelation.png)
+
+<details>
+<summary><b>Histogram vs. normal distribution</b> (click to expand)</summary>
+
+<br>
+
+![Histogram vs. normal](figures/03_histogram_vs_normal.png)
+
+</details>
 
 ---
 
@@ -390,7 +413,8 @@ Open the notebooks in order (`01` to `06`) and use **Run All**. Each notebook sa
   days; an episode not recovered by the end of the sample would be flagged as **censored**.
 - **Thresholds fixed in advance** by market convention, before looking at the data: correction ≥ 10%,
   bear market ≥ 20%.
-- **Calmar-type ratio**: `CAGR / |maximum drawdown|`.
+- **Calmar-type ratio**: `CAGR / |maximum drawdown|` over the full sample (the original Calmar ratio
+  uses the last 36 months).
 
 ### Results
 
@@ -401,26 +425,37 @@ Open the notebooks in order (`01` to `06`) and use **Run All**. Each notebook sa
 | Share of days at a new high | 12.7% |
 | Share of days at least 10% below the peak | 15.3% |
 
-| Episode | Peak-to-trough decline | Notes |
-|---|---|---|
-| COVID-19 (2020) | **−33.9%** | Peak 2020-02-19, trough 2020-03-23 after 23 trading days, recovered 2020-08-18 (126 trading days in total) |
-| 2022 bear market | **−25.4%** | Peak 2022-01-03, trough 2022-10-12 after 195 trading days, recovered 2024-01-19 (513 trading days in total) |
-| Late 2018 | −19.8% | Just short of the 20% bear-market threshold on a closing basis |
-| 2025 | −18.9% | 89 trading days from peak to recovery |
-| 2015–2016 | −14.2% | 286 trading days from peak to recovery |
-| February 2018 | −10.2% | Trough reached in 9 trading days |
+| Episode | Type | Peak | Trough | Recovery | Depth | Days to trough | Days trough → recovery | Total days |
+|---|---|---|---|---|---|---|---|---|
+| COVID-19 | Bear market | 2020-02-19 | 2020-03-23 | 2020-08-18 | **−33.9%** | 23 | 103 | 126 |
+| 2022 | Bear market | 2022-01-03 | 2022-10-12 | 2024-01-19 | **−25.4%** | 195 | 318 | 513 |
+| Late 2018 | Correction | 2018-09-20 | 2018-12-24 | 2019-04-23 | −19.8% | 65 | 81 | 146 |
+| 2025 | Correction | 2025-02-19 | 2025-04-08 | 2025-06-27 | −18.9% | 34 | 55 | 89 |
+| 2015–2016 | Correction | 2015-05-21 | 2016-02-11 | 2016-07-11 | −14.2% | 183 | 103 | 286 |
+| February 2018 | Correction | 2018-01-26 | 2018-02-08 | 2018-08-24 | −10.2% | 9 | 137 | 146 |
+
+Durations are in trading days. Recovery = first close back at the previous peak.
+
+### Interpretation
 
 - All six episodes were recovered within the sample: **no censored durations**.
 - **Depth and duration are two different risks**: COVID was the deepest loss but was recovered in about
   six months; 2022 was shallower but kept investors under water for two years. This mirrors the
   "spike" vs. "persistent stress" distinction of Block 2.
+- **The speed of a fall says little about the speed of the recovery**: February 2018 hit its trough in
+  9 trading days but took 137 more to recover, while 2015–2016 took 183 days to reach its trough.
+- **Late 2018 (−19.8%) is not classified as a bear market**: it stopped just short of the 20% threshold
+  on a closing basis, which shows that the rule is applied as fixed in advance.
 - On a total-return basis (dividends reinvested), recoveries would be faster.
 
 ![Underwater chart](figures/04_underwater.png)
-![Drawdown episodes](figures/04_episodes_on_price.png)
 
 *The underwater chart plots `DD_t`: the surface is the previous peak and the curve shows how far below
 it the index stands each day.*
+
+![Drawdown episodes](figures/04_episodes_on_price.png)
+
+*Red: bear markets (decline of 20% or more). Orange: corrections (10% to 20%).*
 
 ---
 
@@ -432,11 +467,12 @@ it the index stands each day.*
 
 - Losses are expressed as **positive numbers** and computed on **simple returns** (actual losses).
 - **Historical VaR**: the empirical quantile of losses; **historical ES**: the average loss beyond the VaR.
-- **Normal VaR and ES**: `VaR = −μ − σ z_(1−α)` and `ES = −μ + σ φ(z_α) / (1 − α)`.
+- **Normal VaR and ES**: `VaR = −μ − σ z_(1−α)` and `ES = −μ + σ φ(z_α) / (1 − α)`, where `z_q` is the
+  standard normal quantile at level q and `φ` the standard normal density.
 - **Rolling backtest**: VaR estimated each day on the previous **252 trading days** (one year, the Basel
-  convention), using only information available at the previous close (`shift(1)`).
+  minimum), using only information available at the previous close (`shift(1)`).
 - **Kupiec (1995) test** of unconditional coverage: likelihood-ratio test that the exceedance rate equals
-  `1 − α`, `LR ~ χ²(1)`.
+  `1 − α`, with `LR` asymptotically χ²(1).
 - Expected Shortfall is preferred by regulators because it is a **coherent** risk measure, unlike VaR,
   which is not sub-additive (Artzner, Delbaen, Eber & Heath, 1999). The Basel Committee's FRTB replaced
   the 99% VaR with a **97.5% ES** for market risk capital (BCBS, 2019).
@@ -457,6 +493,8 @@ it the index stands each day.*
 | Normal | 95% | 145 | 5.33% | 136 | 0.44 | Not rejected |
 | Normal | 99% | 72 | 2.65% | 27 | < 0.001 (LR = 51.3) | **Rejected** |
 
+### Interpretation
+
 - **The normal model crosses the empirical distribution.** It *overestimates* the 95% VaR (the empirical
   distribution has thinner "shoulders") and *underestimates* the 99% VaR by 21% and the 99% ES by 37%
   (fat tails). The error grows with the confidence level and is largest for the ES.
@@ -473,6 +511,9 @@ it the index stands each day.*
   independence as well.
 
 ![VaR exceedances](figures/05_var_exceedances.png)
+
+*Top: historical 99% VaR (44 exceedances). Bottom: normal 99% VaR (72 exceedances). Red dots mark the
+days when the loss exceeded the VaR estimated at the previous close.*
 
 ---
 
@@ -492,7 +533,9 @@ it the index stands each day.*
   autocorrelated: standard errors are **Newey-West (1987) HAC with 21 lags**.
 - **Robustness**: the same regressions on **141 month-end observations** (non-overlapping, HAC with 1 lag).
 - **Variance risk premium**: `VRP_t = VIX_t² − RV(t+1 → t+21)²` (Carr & Wu, 2009; Bollerslev, Tauchen &
-  Zhou, 2009).
+  Zhou, 2009). Variances are compared rather than volatilities because of **Jensen's inequality**: the VIX
+  is the square root of a risk-neutral expected *variance*, so `√E[σ²] ≥ E[σ]` and part of a gap measured
+  in volatility would be mechanical.
 
 ### Results (2,933 dates)
 
@@ -510,6 +553,11 @@ it the index stands each day.*
 | Naive, daily | 0.076 | 0.49 (0.09) | 0.24 | Rejected (p < 0.001) |
 | VIX, monthly | −0.024 | 0.94 (0.22) | **0.38** | Rejected (p < 0.001) |
 | Naive, monthly | 0.080 | 0.46 (0.08) | 0.20 | Rejected (p < 0.001) |
+
+The monthly, non-overlapping sample confirms the daily results: the conclusions do not depend on the
+overlap of observations.
+
+### Interpretation
 
 - **The VIX is biased upward**: 18.3% on average vs. 14.8% realized, and above realized volatility on
   **82.9% of days**. This is not a forecasting error but a **price**: the premium investors pay for
@@ -529,12 +577,22 @@ it the index stands each day.*
 - **The variance risk premium has an insurer's profile**: small, regular gains and rare, very large
   losses (about −0.8 in February–March 2020, −0.2 in early 2025), the same negative skewness as the
   returns themselves. Right after each crash the premium turns strongly positive.
-- **Jensen's inequality**: the VIX is the square root of a risk-neutral expected *variance*, so
-  `√E[σ²] ≥ E[σ]` and part of the volatility gap is mechanical. Comparing variances (VRP) avoids this.
-- **Results are robust** to the overlap of observations (monthly sample).
+
+![VIX vs. subsequently realized volatility](figures/06_vix_vs_realized.png)
+
+*The orange line at date t is the volatility realized over the **next** 21 trading days: its spikes
+appear before the VIX reacts. In calm periods the VIX (blue) stays above it: that gap is the premium.*
 
 ![VIX vs. realized volatility scatter](figures/06_vix_scatter.png)
+
+*Each dot is one date. A perfect forecast would lie on the dashed 45° line; most dots lie below it. The
+red Mincer-Zarnowitz line is flatter (b = 0.83), and the vertical clusters on the left are the dates just
+before the 2020 and 2025 shocks.*
+
 ![Variance risk premium](figures/06_variance_risk_premium.png)
+
+*VIX² minus the variance realized over the next 21 days: small, regular positive values and rare, deep
+negative spikes (2020, 2025), the payoff profile of an insurer.*
 
 ---
 
