@@ -42,10 +42,12 @@ def build_forecast_table(vix, returns, horizon=21):
     naive = (returns.rolling(horizon).std() * np.sqrt(TRADING_DAYS)).rename("naive")
     table = pd.concat([vix, naive, realized_future_vol(returns, horizon)], axis=1, join="inner").dropna()
 
-        dropped = vix.index.difference(table.index).intersection(vix.index[vix.index < table.index[-1]])
-    if len(dropped) > 0:
-        print(f"{len(dropped)} VIX dates without matching S&P 500 data were dropped "
-              f"(e.g. {', '.join(str(d.date()) for d in dropped[:5])}).")
+    # Report VIX dates inside the sample window that have no S&P 500 return (e.g. US market holidays)
+    missing = vix.index.difference(returns.index)
+    missing = missing[(missing >= table.index[0]) & (missing <= table.index[-1])]
+    if len(missing) > 0:
+        print(f"{len(missing)} VIX dates without an S&P 500 return were dropped: "
+              f"{', '.join(str(d.date()) for d in missing)}.")
     return table
 
 
